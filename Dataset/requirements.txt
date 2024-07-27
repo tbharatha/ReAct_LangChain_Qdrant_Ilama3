@@ -1,1 +1,14 @@
-
+ groq qdrant-client
+ langchain-groq
+ langchainhub
+ PyPDF2 # install the missing package
+ langchain-community
+ gradio
+ fuzzywuzzy
+ transformers
+ sentence_transformers
+ langchain-text-splitter
+ openai
+ python-dotenv
+ llama-cpp-python
+ huggingface_hub
