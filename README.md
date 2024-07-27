@@ -125,29 +125,6 @@ torch
    pip install -r requirements.txt
    ```
 
-## Data Preparation
-
-1. Place your PDF documents in the `dataset` directory.
-2. Run the script to extract text from the PDFs:
-   ```python
-   def extract_text_from_pdfs_in_directory(directory):
-       # Code to extract text
-       ...
-
-   directory_path = "dataset/"
-   extract_text_from_pdfs_in_directory(directory_path)
-   ```
-
-3. Store the extracted document data:
-   ```python
-   directory_path = "Dataset"
-   txt_files = [file for file in os.listdir(directory_path) if file.endswith('.txt')]
-
-   all_documents = {}
-   for txt_file in txt_files:
-       # Code to store document data
-       ...
-   ```
 
 ## Usage
 
