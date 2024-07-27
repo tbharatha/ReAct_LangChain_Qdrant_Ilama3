@@ -110,25 +110,7 @@ gradio
 torch
 ```
 
-### Improved README File (`README.md`)
 
-```markdown
-# Intelligent Information Retrieval with LangChain ReAct Agents, Qdrant, and Llama3
-
-This project demonstrates how to integrate LangChain's ReAct Agents, Qdrant Vector Database, and the Llama3 model to build a robust intelligent information retrieval system. The setup allows users to query and retrieve information efficiently from a collection of documents.
-
-## Table of Contents
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Data Preparation](#data-preparation)
-- [Usage](#usage)
-- [Running the Gradio Interface](#running-the-gradio-interface)
-
-## Prerequisites
-
-Ensure you have the following installed:
-- Python 3.7 or higher
-- pip
 
 ## Installation
 
