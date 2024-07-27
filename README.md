@@ -58,6 +58,13 @@ def extract_text_from_pdf(pdf_path):
         extracted_text += page.extract_text()
     return extracted_text
 
+Sure, I'll update the directory path to "dataset" and provide a `requirements.txt` file along with an improved `README.md`.
+
+### Updated Code with Directory Path Change
+
+#### Extracting Text from PDFs
+
+```python
 def extract_text_from_pdfs_in_directory(directory):
     for filename in os.listdir(directory):
         if filename.endswith(".pdf"):
@@ -68,14 +75,14 @@ def extract_text_from_pdfs_in_directory(directory):
             with open(txt_filepath, "w") as txt_file:
                 txt_file.write(extracted_text)
 
-directory_path = "Docs/"
+directory_path = "dataset/"
 extract_text_from_pdfs_in_directory(directory_path)
 ```
 
-Store document data:
+#### Storing Document Data
 
 ```python
-directory_path = "Docs"
+directory_path = "dataset"
 txt_files = [file for file in os.listdir(directory_path) if file.endswith('.txt')]
 
 all_documents = {}
@@ -89,184 +96,153 @@ for txt_file in txt_files:
     all_documents[txt_file] = docs
 ```
 
-### Storing Data in Qdrant Vector DB Using Custom Embeddings
+### Requirements File (`requirements.txt`)
 
-Use "all-mpnet-base-v2" embedding model from HuggingFace:
-
-```python
-from langchain.embeddings import HuggingFaceEmbeddings
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-
-qdrant_collections = {}
-for txt_file in txt_files:
-    qdrant_collections[txt_file] = Qdrant.from_documents(
-        all_documents[txt_file],
-        embeddings,
-        location=":memory:", 
-        collection_name=txt_file,
-    )
-
-retriever = {}
-for txt_file in txt_files:
-    retriever[txt_file] = qdrant_collections[txt_file].as_retriever()
+```
+PyPDF2
+numpy
+langchain
+qdrant-client
+sentence-transformers
+transformers
+fuzzywuzzy
+gradio
+torch
 ```
 
-### Setting ReAct Agents
+### Improved README File (`README.md`)
 
-Define functions for agents to call and retrieve additional information:
+```markdown
+# Intelligent Information Retrieval with LangChain ReAct Agents, Qdrant, and Llama3
 
-```python
-def get_relevant_document(name : str) -> str:
-    search_name = name
-    best_match = process.extractOne(search_name, txt_files, scorer=fuzz.ratio)
-    selected_file = best_match[0]
-    selected_retriever = retriever[selected_file]
-    global query
-    results = selected_retriever.get_relevant_documents(query)
-    global retrieved_text
-    total_content = "\n\nBelow are the related document's content: \n\n"
-    chunk_count = 0
-    for result in results:
-        chunk_count += 1
-        if chunk_count > 4:
-            break
-        total_content += result.page_content + "\n"
-    retrieved_text = total_content
-    return total_content
+This project demonstrates how to integrate LangChain's ReAct Agents, Qdrant Vector Database, and the Llama3 model to build a robust intelligent information retrieval system. The setup allows users to query and retrieve information efficiently from a collection of documents.
 
-def get_summarized_text(name : str) -> str:
-    from transformers import pipeline
-    summarizer = pipeline("summarization", model="Falconsai/text_summarization")
-    global retrieved_text
-    article = retrieved_text
-    return summarizer(article, max_length=1000, min_length=30, do_sample=False)[0]['summary_text']
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Data Preparation](#data-preparation)
+- [Usage](#usage)
+- [Running the Gradio Interface](#running-the-gradio-interface)
 
-def get_today_date(input : str) -> str:
-    import datetime
-    today = datetime.date.today()
-    return f"\n {today} \n"
+## Prerequisites
 
-def get_age(name: str, person_database: dict) -> int:
-    if name in person_database:
-        return person_database[name]["Age"]
-    else:
-        return None
+Ensure you have the following installed:
+- Python 3.7 or higher
+- pip
 
-def get_age_info(name: str) -> str:
-    person_database = {
-        "Sam": {"Age": 21, "Nationality": "US"},
-        "Alice": {"Age": 25, "Nationality": "UK"},
-        "Bob": {"Age": 11, "Nationality": "US"}
-    }
-    age = get_age(name, person_database)
-    if age is not None:
-        return f"\nAge: {age}\n"
-    else:
-        return f"\nAge Information for {name} not found.\n"
-```
+## Installation
 
-Wrap the functions around `Tool` for agent usage:
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/yourproject.git
+   cd yourproject
+   ```
 
-```python
-get_age_info_tool = Tool(
-    name="Get Age",
-    func=get_age_info,
-    description="Useful for getting age information for any person. Input should be the name of the person."
-)
+2. Install the required Python packages:
+   ```sh
+   pip install -r requirements.txt
+   ```
 
-get_today_date_tool = Tool(
-    name="Get Todays Date",
-    func=get_today_date,
-    description="Useful for getting today's date"
-)
+## Data Preparation
 
-get_relevant_document_tool = Tool(
-    name="Get Relevant document",
-    func=get_relevant_document,
-    description="Useful for getting relevant document that we need."
-)
+1. Place your PDF documents in the `dataset` directory.
+2. Run the script to extract text from the PDFs:
+   ```python
+   def extract_text_from_pdfs_in_directory(directory):
+       # Code to extract text
+       ...
 
-get_summarized_text_tool = Tool(
-    name="Get Summarized Text",
-    func=get_summarized_text,
-    description="Useful for getting summarized text for any document."
-)
-```
+   directory_path = "dataset/"
+   extract_text_from_pdfs_in_directory(directory_path)
+   ```
 
-### Setting Agent Prompts
+3. Store the extracted document data:
+   ```python
+   directory_path = "Dataset"
+   txt_files = [file for file in os.listdir(directory_path) if file.endswith('.txt')]
 
-Using LangChain Hub:
+   all_documents = {}
+   for txt_file in txt_files:
+       # Code to store document data
+       ...
+   ```
 
-```python
-prompt_react = hub.pull("hwchase17/react")
-```
+## Usage
 
-### ReAct Agent Creation
+1. Define functions for the ReAct agents to call and retrieve additional information:
+   ```python
+   def get_relevant_document(name: str) -> str:
+       # Code to get relevant document
+       ...
 
-Create and configure a ReAct agent for intelligent query processing:
+   def get_summarized_text(name: str) -> str:
+       # Code to get summarized text
+       ...
 
-```python
-tools = [get_relevant_document_tool, get_summarized_text_tool, get_today_date_tool, get_age_info_tool]
-retrieved_text = ""
+   def get_today_date(input: str) -> str:
+       # Code to get today's date
+       ...
 
-model = ChatGroq(model_name="llama3-70b-8192", groq_api_key=GROQ_API_KEY, temperature=0)
-react_agent = create_react_agent(model, tools=tools, prompt=prompt_react)
-react_agent_executor = AgentExecutor(
-    agent=react_agent, tools=tools, verbose=True, handle_parsing_errors=True
-)
-```
+   def get_age_info(name: str) -> str:
+       # Code to get age information
+       ...
+   ```
 
-### Executing Complex Queries
+2. Wrap the functions around `Tool` for agent usage:
+   ```python
+   get_age_info_tool = Tool(
+       name="Get Age",
+       func=get_age_info,
+       description="Useful for getting age information for any person. Input should be the name of the person."
+   )
+   ```
 
-Example queries:
+3. Set up the ReAct agents using LangChain Hub:
+   ```python
+   prompt_react = hub.pull("hwchase17/react")
+   tools = [get_relevant_document_tool, get_summarized_text_tool, get_today_date_tool, get_age_info_tool]
 
-1. Summary of age requirements for OpenAI Services:
-```python
-query = “Give me the summary for the question: What age requirement is specified for using the OpenAI Services, and what provision applies if the user is under 18?”
-react_agent_executor.invoke({"input": query})
-```
+   model = ChatGroq(model_name="llama3-70b-8192", groq_api_key=GROQ_API_KEY, temperature=0)
+   react_agent = create_react_agent(model, tools=tools, prompt=prompt_react)
+   react_agent_executor = AgentExecutor(
+       agent=react_agent, tools=tools, verbose=True, handle_parsing_errors=True
+   )
+   ```
 
-2. Resources Google offers for user assistance:
-```python
-query = “Give me summary of What resources does Google offer to users for assistance and guidance in using its services?”
-react_agent_executor.invoke({"input": query})
-```
+4. Execute complex queries:
+   ```python
+   query = "Give me the summary for the question: What age requirement is specified for using the OpenAI Services, and what provision applies if the user is under 18?"
+   response = react_agent_executor.invoke({"input": query})
+   ```
 
-3. Eligibility for OpenAI Services in 2027:
-```python
-query = “I am Bob. Will I be eligible in 2027 for the age requirement specified for using the OpenAI Services by OpenAI Terms?”
-react_agent_executor.invoke({"input": query})
-```
+## Running the Gradio Interface
 
-### Conclusion
+1. Create a Gradio UI for the system:
+   ```python
+   import gradio as gr
 
-The integration of LangChain’s ReAct Agents with Qdrant and Llama3 enhances query handling efficiency and provides insightful responses to user queries. This step-by-step guide helps build an intelligent information retrieval system using these advanced technologies.
+   def generate_response(question):
+       tools = [get_age_info_tool, get_health_info_tool]
+       model = ChatGroq(model_name="llama3-70b-8192", groq_api_key=GROQ_API_KEY, temperature=0)
+       react_agent = create_react_agent(model, tools=tools, prompt=prompt_react)
+       react_agent_executor = AgentExecutor(
+           agent=react_agent, tools=tools, verbose=True, handle_parsing_errors=True
+       )
+       response = react_agent_executor.invoke({"input": question})
+       return response["output"]
 
-You can also add a Gradio UI over the system:
+   with gr.Blocks() as demo:
+       chatbot = gr.Chatbot()
+       question = gr.Textbox(placeholder="Ask a question about any topic")
+       submit_button = gr.Button("Submit")
+       submit_button.click(fn=generate_response, inputs=question, outputs=chatbot)
 
-```python
-import gradio as gr
-from io import StringIO
-import sys
-import re
+   demo.launch(share=True)
+   ```
 
-def generate_response(question):
-    tools = [get_age_info_tool, get_health_info_tool]
-    model = ChatGroq(model_name
+2. Run the script to launch the interface:
+   ```sh
+   python script_name.py
+   ```
 
-="llama3-70b-8192", groq_api_key=GROQ_API_KEY, temperature=0)
-    react_agent = create_react_agent(model, tools=tools, prompt=prompt_react)
-    react_agent_executor = AgentExecutor(
-        agent=react_agent, tools=tools, verbose=True, handle_parsing_errors=True
-    )
-    response = react_agent_executor.invoke({"input": question})
-    return response["output"]
-
-with gr.Blocks() as demo:
-    chatbot = gr.Chatbot()
-    question = gr.Textbox(placeholder="Ask a question about any topic")
-    submit_button = gr.Button("Submit")
-    submit_button.click(fn=generate_response, inputs=question, outputs=chatbot)
-
-demo.launch(share=True)
-```
+Now you have a fully functional intelligent information retrieval system with a user-friendly interface.
