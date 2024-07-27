@@ -1,1 +1,1 @@
-## Implementing ReAct with LangChain and Qdrant: A Comprehensive Guide
+## Integrating ReAct LangChain with Qdrant and Illama3: A Comprehensive Guide
